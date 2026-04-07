@@ -1,0 +1,25 @@
+project:
+  name: "project-finetuning"
+  seed: 42
+
+cv:
+  model_name: "resnet50"
+  num_classes: 37       # Oxford Pets -> 37
+  batch_size: 32
+  epochs: 10
+  learning_rate: 0.001
+  image_size: 224
+
+llm:
+  model_name: "microsoft/Phi-3-mini-4k-instruct"
+  max_length: 512
+  batch_size: 4
+  epochs: 3
+  learning_rate: 0.0002
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+
+wandb:
+  project: "project-finetuning"
+  entity: null          # null for personal account

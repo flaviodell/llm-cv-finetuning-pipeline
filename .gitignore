@@ -1,0 +1,24 @@
+venv/
+.env
+
+data/raw/
+models/
+outputs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# W&B
+wandb/
+
+# OS
+.DS_Store
+Thumbs.db
