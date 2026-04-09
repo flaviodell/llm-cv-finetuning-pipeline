@@ -110,9 +110,9 @@ def run_llm_evaluation(config: dict):
     )
 
     results = {
-        "faithfulness":     round(float(scores["faithfulness"]), 4),
-        "answer_relevancy": round(float(scores["answer_relevancy"]), 4),
-        "num_questions":    len(questions)
+        "faithfulness": round(float(np.nanmean(scores["faithfulness"])), 4),
+        "answer_relevancy": round(float(np.nanmean(scores["answer_relevancy"])), 4),
+        "num_questions": len(questions)
     }
 
     print(f"\nRAGAS results:")

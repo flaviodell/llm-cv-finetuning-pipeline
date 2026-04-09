@@ -1,0 +1,7 @@
+{
+  "test_accuracy": 0.9008,
+  "test_f1_macro": 0.8989,
+  "num_classes": 37,
+  "best_val_accuracy": 0.9185,
+  "best_val_loss": 0.2796
+}
