@@ -7,7 +7,8 @@ from datasets import Dataset
 from ragas import evaluate
 from ragas.metrics import faithfulness, answer_relevancy
 from ragas.llms import LangchainLLMWrapper
-from langchain_groq import ChatGroq
+from ragas.run_config import RunConfig
+from langchain_openai import ChatOpenAI
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
 from src.utils.common import get_env, set_seed
@@ -15,15 +16,14 @@ from src.utils.inference import generate_response
 
 
 def load_eval_questions(data_dir: str = "data/processed") -> list:
-    # Load validation set as evaluation questions
     questions = []
     with open(f"{data_dir}/val.jsonl", encoding="utf-8") as f:
         for line in f:
             ex = json.loads(line)
             questions.append({
-                "question":    ex["messages"][1]["content"],
+                "question":     ex["messages"][1]["content"],
                 "ground_truth": ex["messages"][2]["content"],
-                "breed":       ex["breed"]
+                "breed":        ex["breed"]
             })
     return questions
 
@@ -44,11 +44,10 @@ def build_ragas_dataset(
             max_new_tokens=max_new_tokens
         )
         records.append({
-            "question":         item["question"],
-            "answer":           answer,
-            "ground_truth":     item["ground_truth"],
-            # RAGAS requires a contexts field even for non-RAG evaluation
-            "contexts":         [item["ground_truth"]]
+            "question":     item["question"],
+            "answer":       answer,
+            "ground_truth": item["ground_truth"],
+            "contexts":     [item["ground_truth"]]
         })
 
     return Dataset.from_list(records)
@@ -81,23 +80,33 @@ def run_llm_evaluation(config: dict):
     model.eval()
 
     # Build evaluation dataset
-    questions    = load_eval_questions()
+    questions     = load_eval_questions()
     ragas_dataset = build_ragas_dataset(model, tokenizer, questions)
 
-    # Use Groq as the judge LLM for RAGAS
+    # Use OpenAI as judge LLM for RAGAS
     judge_llm = LangchainLLMWrapper(
-        ChatGroq(
-            model="llama-3.1-8b-instant",
-            api_key=get_env("GROQ_API_KEY"),
-            temperature=0
+        ChatOpenAI(
+            model="gpt-4o-mini",
+            api_key=get_env("OPENAI_API_KEY"),
+            temperature=0,
+            # Force single completion to avoid BadRequestError n > 1
+            n=1
         )
+    )
+
+    # Sequential execution to avoid parallel request errors
+    run_config = RunConfig(
+        max_workers=1,
+        max_wait=60,
+        max_retries=3
     )
 
     print("\nRunning RAGAS evaluation...")
     scores = evaluate(
         dataset=ragas_dataset,
         metrics=[faithfulness, answer_relevancy],
-        llm=judge_llm
+        llm=judge_llm,
+        run_config=run_config
     )
 
     results = {
