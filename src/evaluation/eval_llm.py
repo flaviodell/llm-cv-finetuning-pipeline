@@ -87,7 +87,7 @@ def run_llm_evaluation(config: dict):
     # Use Groq as the judge LLM for RAGAS
     judge_llm = LangchainLLMWrapper(
         ChatGroq(
-            model="llama3-8b-8192",
+            model="llama-3.1-8b-instant",
             api_key=get_env("GROQ_API_KEY"),
             temperature=0
         )
