@@ -23,3 +23,7 @@ llm:
 wandb:
   project: "project-finetuning"
   entity: null          # null for personal account
+
+huggingface:
+  cv_repo:  "flaviodell/oxford-pets-resnet50"
+  llm_repo: "flaviodell/pet-expert-mistral7b-lora"
