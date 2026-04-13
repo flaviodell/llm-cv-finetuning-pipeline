@@ -1,4 +1,4 @@
-# Fine-tuning pipeline: computer vision + LLM
+# Fine-tuning pipeline: Computer Vision + LLM
 
 > Transfer learning on Oxford Pets · LoRA fine-tuning on Mistral 7B · RAGAS evaluation · W&B tracking
 
