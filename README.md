@@ -23,6 +23,8 @@ The pipeline produces two complementary models:
 
 These two models are designed to feed into a larger agentic system where an autonomous agent identifies a breed from an image and provides expert veterinary advice.
 
+**Full project walkthrough**: [notebooks/project_report.ipynb](notebooks/project_report.ipynb)
+
 ---
 
 ## Results
@@ -47,6 +49,22 @@ These two models are designed to feed into a larger agentic system where an auto
 | Quantization | FP16 → 4-bit NF4 (72% size reduction) |
 
 Experiment tracking: [W&B dashboard](https://wandb.ai/flaviodellave/project-finetuning)
+
+---
+
+## Tech stack
+
+| Component | Technology |
+|-----------|-----------|
+| CV training | PyTorch · torchvision · torchmetrics |
+| LLM fine-tuning | HuggingFace Transformers · PEFT · bitsandbytes |
+| Dataset generation | Groq API (LLaMA 3 8B) |
+| Evaluation | RAGAS · OpenAI GPT-4o-mini (judge) |
+| Experiment tracking | Weights & Biases |
+| Model hosting | HuggingFace Hub |
+| Quantization | bitsandbytes (4-bit NF4 / QLoRA) |
+| Environment | Python 3.11 · venv |
+| Cloud training | Google Colab · Kaggle (T4 x2 GPU) |
 
 ---
 
@@ -83,9 +101,10 @@ Oxford Pets dataset (37 breeds)
 │   └── llm/best_lora_adapter/       # LoRA adapter (not tracked, on HuggingFace)
 ├── notebooks/
 │   ├── project_report.ipynb         # ← main portfolio notebook
-│   ├── train_cv_colab.ipynb
-│   ├── train_llm_colab.ipynb
-│   └── eval_llm_colab.ipynb
+│   ├── train_cv_colab.ipynb         # CV training on Colab
+│   ├── train_llm_colab.ipynb        # LLM fine-tuning on Kaggle
+│   ├── eval_llm_colab.ipynb         # RAGAS evaluation on Kaggle
+│   └── push_llm_to_hub_kaggle.ipynb # Model upload to HuggingFace Hub
 ├── outputs/
 │   ├── cv/                          # Metrics, confusion matrix, per-class accuracy
 │   ├── llm/                         # RAGAS results, quantization analysis
@@ -129,7 +148,8 @@ OPENAI_API_KEY=...
 ### Run the report notebook
 
 ```bash
-set PYTHONPATH=%CD%
+set PYTHONPATH=%CD%        # Windows
+# export PYTHONPATH=$(pwd)  # Mac/Linux
 jupyter notebook notebooks/project_report.ipynb
 ```
 
@@ -162,7 +182,7 @@ snapshot_download(repo_id="flaviodell/pet-expert-mistral7b-lora")
 
 **LoRA (Low-Rank Adaptation)** — instead of updating all 7B parameters, trainable low-rank matrices are injected into the attention layers (q_proj, v_proj, r=16). Result: 0.1% trainable parameters, full fine-tuning quality.
 
-**QLoRA** — LoRA combined with 4-bit NF4 quantization via bitsandbytes. Reduces the base model from 13.5 GB to 3.8 GB (72% reduction), making 7B fine-tuning feasible on a single T4/P100 GPU.
+**QLoRA** — LoRA combined with 4-bit NF4 quantization via bitsandbytes. Reduces the base model from 13.5 GB to 3.8 GB (72% reduction), making 7B fine-tuning feasible on a single T4 GPU.
 
 **Synthetic dataset generation** — 185 instruction/response pairs generated via Groq API (LLaMA 3 8B as teacher model). Covers all 37 Oxford Pets breeds across 5 question templates per breed.
 
@@ -176,7 +196,7 @@ snapshot_download(repo_id="flaviodell/pet-expert-mistral7b-lora")
 |-------|-------|----------|------|
 | CV training (10 epochs) | Google Colab | T4 GPU (15.6 GB) | ~20 min |
 | LLM fine-tuning (3 epochs) | Kaggle | T4 x2 GPU (2×15.6 GB) | ~30 min |
-| Evaluation                 | Kaggle | T4 x2 GPU (2×15.6 GB) | ~15 min |
+| Evaluation | Kaggle | T4 x2 GPU (2×15.6 GB) | ~15 min |
 | Everything else | Local | CPU | — |
 
 ---
