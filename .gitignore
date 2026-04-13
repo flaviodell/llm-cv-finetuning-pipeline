@@ -2,6 +2,7 @@ venv/
 .env
 
 data/raw/
+data/processed/generated_raw.jsonl
 models/
 outputs/
 
